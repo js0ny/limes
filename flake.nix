@@ -20,6 +20,7 @@
         system:
         let
           pkgs = import nixpkgs { inherit system; };
+          lib = pkgs.lib;
         in
         {
           default = pkgs.rustPlatform.buildRustPackage {
@@ -27,6 +28,13 @@
             version = "0.1.0";
             src = ./.;
             cargoLock.lockFile = ./Cargo.lock;
+
+            meta = {
+              description = "Linux input method switcher";
+              license = lib.licenses.mit;
+              mainProgram = "limes";
+              platforms = lib.platforms.linux;
+            };
           };
         }
       );
