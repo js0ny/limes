@@ -1,40 +1,76 @@
 mod backends;
 mod cli;
 
-use crate::backends::{Fcitx5Client, InputMethod};
+use crate::backends::{Backend, Fcitx5Client, Fcitx5RimeClient, InputMethod, RimeMode};
 use anyhow::Result;
 use cli::Command;
 
 #[tokio::main]
 async fn main() {
-    let command = match cli::parse_args(std::env::args().skip(1)) {
-        Ok(command) => command,
+    let parsed = match cli::parse_args(std::env::args().skip(1)) {
+        Ok(parsed) => parsed,
         Err(error) => error.exit(),
     };
 
-    if let Err(error) = run(command).await {
-        eprintln!("error: {error:#}");
-        std::process::exit(1);
+    match parsed {
+        cli::Parsed::Completion(shell) => cli::generate_completion(shell),
+        cli::Parsed::Run {
+            command,
+            backend,
+            mode,
+        } => {
+            let backend = backend.unwrap_or(Backend::Fcitx5);
+            if let Err(error) = run(command, backend, mode).await {
+                eprintln!("error: {error:#}");
+                std::process::exit(1);
+            }
+        }
     }
 }
 
-async fn run(command: Command) -> Result<()> {
-    let client = Fcitx5Client::new().await?;
+async fn run(command: Command, backend: Backend, mode: Option<RimeMode>) -> Result<()> {
+    if mode.is_some() && backend != Backend::Fcitx5Rime {
+        anyhow::bail!("--mode is only supported with --backend fcitx5-rime");
+    }
 
-    match command {
-        Command::Get => {
-            println!("{}", client.current_input_method().await?);
-        }
-        Command::Set { name } => {
-            client.set_current_input_method(&name).await?;
-        }
-        Command::List => {
-            for method in client.available_input_methods().await? {
-                println!("{}", format_input_method(&method));
+    match backend {
+        Backend::Fcitx5 => {
+            let client = Fcitx5Client::new().await?;
+            match command {
+                Command::Get => {
+                    println!("{}", client.current_input_method().await?);
+                }
+                Command::Set { name } => {
+                    client.set_current_input_method(&name).await?;
+                }
+                Command::List => {
+                    for method in client.available_input_methods().await? {
+                        println!("{}", format_input_method(&method));
+                    }
+                }
+                Command::Toggle => {
+                    client.toggle().await?;
+                }
             }
         }
-        Command::Toggle => {
-            client.toggle().await?;
+        Backend::Fcitx5Rime => {
+            let client = Fcitx5RimeClient::new(mode.unwrap_or(RimeMode::Ascii)).await?;
+            match command {
+                Command::Get => {
+                    println!("{}", client.get().await?);
+                }
+                Command::Set { name } => {
+                    client.set(&name).await?;
+                }
+                Command::List => {
+                    for name in client.list().await? {
+                        println!("{name}");
+                    }
+                }
+                Command::Toggle => {
+                    client.toggle().await?;
+                }
+            }
         }
     }
 
