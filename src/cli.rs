@@ -11,7 +11,7 @@ pub enum Command {
 #[derive(Debug, Parser)]
 #[command(
     name = "limes",
-    about = "im-select-compatible Linux input method switcher for Fcitx5",
+    about = "Linux input method switcher",
     disable_help_subcommand = true
 )]
 struct Cli {

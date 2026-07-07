@@ -1,9 +1,9 @@
+mod backends;
 mod cli;
-mod fcitx5;
 
+use crate::backends::{Fcitx5Client, InputMethod};
 use anyhow::Result;
 use cli::Command;
-use fcitx5::{Fcitx5Client, InputMethod};
 
 #[tokio::main]
 async fn main() {
