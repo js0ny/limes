@@ -1,7 +1,7 @@
 mod backends;
 mod cli;
 
-use crate::backends::{Backend, Fcitx5Client, Fcitx5RimeClient, InputMethod, RimeMode};
+use crate::backends::{Backend, Fcitx5Client, Fcitx5RimeClient, IBusClient, InputMethod, RimeMode};
 use anyhow::Result;
 use cli::Command;
 
@@ -69,6 +69,27 @@ async fn run(command: Command, backend: Backend, mode: Option<RimeMode>) -> Resu
                 }
                 Command::Toggle => {
                     client.toggle().await?;
+                }
+            }
+        }
+        Backend::Ibus => {
+            match command {
+                Command::Get => {
+                    let client = IBusClient::new().await?;
+                    println!("{}", client.get().await?);
+                }
+                Command::Set { name } => {
+                    let client = IBusClient::new().await?;
+                    client.set(&name).await?;
+                }
+                Command::List => {
+                    let client = IBusClient::new().await?;
+                    for name in client.list().await? {
+                        println!("{name}");
+                    }
+                }
+                Command::Toggle => {
+                    IBusClient::toggle()?;
                 }
             }
         }

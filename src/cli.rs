@@ -196,6 +196,12 @@ mod tests {
             Some(Backend::Fcitx5Rime),
             None,
         );
+        assert_run(
+            &["--backend", "ibus", "list"][..],
+            Command::List,
+            Some(Backend::Ibus),
+            None,
+        );
     }
 
     #[test]
@@ -223,6 +229,12 @@ mod tests {
             Some(Backend::Fcitx5),
             Some(RimeMode::Schema),
         );
+        assert_run(
+            &["--backend", "ibus", "--mode", "ascii", "list"][..],
+            Command::List,
+            Some(Backend::Ibus),
+            Some(RimeMode::Ascii),
+        );
     }
 
     #[test]
@@ -248,7 +260,7 @@ mod tests {
 
     #[test]
     fn rejects_unknown_backend_value() {
-        assert_error_kind(&["--backend", "ibus", "list"][..], ErrorKind::InvalidValue);
+        assert_error_kind(&["--backend", "unknown", "list"][..], ErrorKind::InvalidValue);
     }
 
     #[test]
@@ -298,7 +310,7 @@ mod tests {
             "help did not expose --backend:\n{help}",
         );
         assert!(
-            help.contains("[possible values: fcitx5, fcitx5-rime]"),
+            help.contains("[possible values: fcitx5, fcitx5-rime, ibus]"),
             "help did not list backend possible values:\n{help}",
         );
         assert!(

@@ -1,8 +1,10 @@
 mod fcitx5;
 mod fcitx5_rime;
+mod ibus;
 
 pub use fcitx5::{Fcitx5Client, InputMethod};
 pub use fcitx5_rime::{Fcitx5RimeClient, RimeMode};
+pub use ibus::IBusClient;
 
 use clap::ValueEnum;
 
@@ -12,4 +14,6 @@ pub enum Backend {
     Fcitx5,
     #[value(name = "fcitx5-rime")]
     Fcitx5Rime,
+    #[value(name = "ibus")]
+    Ibus,
 }
