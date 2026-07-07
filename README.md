@@ -7,6 +7,9 @@ backends.
 
 Supported backends: `fcitx5`, `fcitx5-rime`, `ibus`.
 
+> [!WARNING]
+> The code of this project is mainly LLM Generated, with basic manual audit, use it with caution.
+
 ## Usage
 
 ```bash
