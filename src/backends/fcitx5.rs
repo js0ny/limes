@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use zbus::{proxy, Connection};
+use zbus::{Connection, proxy};
 
 const SERVICE: &str = "org.fcitx.Fcitx5";
 const PATH: &str = "/controller";

@@ -1,9 +1,7 @@
 {
   description = "Linux input method switcher";
 
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-  };
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
   outputs =
     { nixpkgs, ... }:
@@ -14,6 +12,8 @@
       ];
 
       forAllSystems = nixpkgs.lib.genAttrs systems;
+
+      manifest = with builtins; fromTOML (readFile ./Cargo.toml);
     in
     {
       packages = forAllSystems (
@@ -23,11 +23,13 @@
           lib = pkgs.lib;
         in
         {
-          default = pkgs.rustPlatform.buildRustPackage {
-            pname = "limes";
-            version = "0.1.0";
-            src = ./.;
+          default = pkgs.pkgsStatic.rustPlatform.buildRustPackage {
+            inherit (manifest.package) version;
+            pname = manifest.package.name;
+            src = lib.cleanSource ./.;
             cargoLock.lockFile = ./Cargo.lock;
+
+            nativeInstallCheckInputs = [ pkgs.versionCheckHook ];
 
             meta = {
               description = "Linux input method switcher";

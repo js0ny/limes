@@ -1,7 +1,7 @@
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use clap::ValueEnum;
 use serde::Deserialize;
-use zbus::{proxy, Connection};
+use zbus::{Connection, proxy};
 
 const SERVICE: &str = "org.fcitx.Fcitx5";
 const PATH: &str = "/rime";

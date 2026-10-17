@@ -1,8 +1,7 @@
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use zbus::{
-    proxy,
+    Connection, proxy,
     zvariant::{OwnedValue, Value},
-    Connection,
 };
 
 const IBUS_DEST: &str = "org.freedesktop.IBus";

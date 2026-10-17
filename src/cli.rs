@@ -24,6 +24,7 @@ pub enum Parsed {
 #[derive(Debug, Parser)]
 #[command(
     name = "limes",
+    version,
     about = "Linux input method switcher",
     disable_help_subcommand = true
 )]
@@ -95,7 +96,7 @@ pub fn generate_completion(shell: Shell) {
 
 #[cfg(test)]
 mod tests {
-    use clap::{error::ErrorKind, CommandFactory};
+    use clap::{CommandFactory, error::ErrorKind};
 
     use super::*;
     use crate::backends::{Backend, RimeMode};
