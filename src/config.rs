@@ -1,14 +1,24 @@
 use anyhow::{Context, Result};
 use directories::BaseDirs;
 use serde::Deserialize;
-use std::{env, fs, path::PathBuf};
+use std::{env, fs, io::ErrorKind, path::PathBuf};
 
 use crate::backends::{self, Backend::Fcitx5, RimeMode::Ascii};
 
 #[derive(Deserialize)]
+#[serde(default)]
 pub struct Config {
     pub default_backend: backends::Backend,
     pub fcitx5_rime_mode: backends::RimeMode,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            default_backend: Fcitx5,
+            fcitx5_rime_mode: Ascii,
+        }
+    }
 }
 
 fn path() -> Result<PathBuf> {
@@ -30,18 +40,17 @@ fn path() -> Result<PathBuf> {
 pub fn load() -> Result<Config> {
     let path = path()?;
 
-    let contents = fs::read_to_string(&path)
-        .with_context(|| format!("Cannot read config file: {}", path.display()))?;
+    let contents = match fs::read_to_string(&path) {
+        Ok(contents) => contents,
+        Err(error) if error.kind() == ErrorKind::NotFound => {
+            return Ok(Config::default());
+        }
+        Err(error) => {
+            return Err(error)
+                .with_context(|| format!("Cannot read config file: {}", path.display()));
+        }
+    };
 
-    let config: Config = toml::from_str(&contents)
-        .with_context(|| format!("Cannot parse config file: {}", path.display()))?;
-
-    Ok(config)
-}
-
-pub fn default() -> Config {
-    Config {
-        default_backend: Fcitx5,
-        fcitx5_rime_mode: Ascii,
-    }
+    toml::from_str(&contents)
+        .with_context(|| format!("Cannot parse config file: {}", path.display()))
 }

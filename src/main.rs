@@ -26,7 +26,7 @@ async fn main() {
         } => {
             let cfg = config::load().unwrap_or_else(|error| {
                 eprintln!("warning: {error:#}; using the default configuration");
-                config::default()
+                config::Config::default()
             });
             let backend = backend.unwrap_or(cfg.default_backend);
             if let Err(error) = run(command, backend, mode, &cfg).await {

@@ -115,8 +115,3 @@ With Nix:
 nix build
 ```
 
-## TODOs
-
-- [ ] Config File, set default backend
-- [ ] `--init-config`, auto discover backend on first run
-- [ ] Defining `toggle` ime groups in config file
