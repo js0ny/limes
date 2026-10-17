@@ -1,7 +1,12 @@
 mod backends;
 mod cli;
+mod config;
 
-use crate::backends::{Backend, Fcitx5Client, Fcitx5RimeClient, IBusClient, InputMethod, RimeMode};
+use crate::backends::{
+    Backend::{self},
+    Fcitx5Client, Fcitx5RimeClient, IBusClient, InputMethod,
+    RimeMode::{self},
+};
 use anyhow::Result;
 use cli::Command;
 
@@ -19,8 +24,12 @@ async fn main() {
             backend,
             mode,
         } => {
-            let backend = backend.unwrap_or(Backend::Fcitx5);
-            if let Err(error) = run(command, backend, mode).await {
+            let cfg = config::load().unwrap_or_else(|error| {
+                eprintln!("warning: {error:#}; using the default configuration");
+                config::default()
+            });
+            let backend = backend.unwrap_or(cfg.default_backend);
+            if let Err(error) = run(command, backend, mode, &cfg).await {
                 eprintln!("error: {error:#}");
                 std::process::exit(1);
             }
@@ -28,7 +37,12 @@ async fn main() {
     }
 }
 
-async fn run(command: Command, backend: Backend, mode: Option<RimeMode>) -> Result<()> {
+async fn run(
+    command: Command,
+    backend: Backend,
+    mode: Option<RimeMode>,
+    cfg: &config::Config,
+) -> Result<()> {
     if mode.is_some() && backend != Backend::Fcitx5Rime {
         anyhow::bail!("--mode is only supported with --backend fcitx5-rime");
     }
@@ -54,7 +68,7 @@ async fn run(command: Command, backend: Backend, mode: Option<RimeMode>) -> Resu
             }
         }
         Backend::Fcitx5Rime => {
-            let client = Fcitx5RimeClient::new(mode.unwrap_or(RimeMode::Ascii)).await?;
+            let client = Fcitx5RimeClient::new(mode.unwrap_or(cfg.fcitx5_rime_mode)).await?;
             match command {
                 Command::Get => {
                     println!("{}", client.get().await?);
@@ -72,27 +86,25 @@ async fn run(command: Command, backend: Backend, mode: Option<RimeMode>) -> Resu
                 }
             }
         }
-        Backend::Ibus => {
-            match command {
-                Command::Get => {
-                    let client = IBusClient::new().await?;
-                    println!("{}", client.get().await?);
-                }
-                Command::Set { name } => {
-                    let client = IBusClient::new().await?;
-                    client.set(&name).await?;
-                }
-                Command::List => {
-                    let client = IBusClient::new().await?;
-                    for name in client.list().await? {
-                        println!("{name}");
-                    }
-                }
-                Command::Toggle => {
-                    IBusClient::toggle()?;
+        Backend::Ibus => match command {
+            Command::Get => {
+                let client = IBusClient::new().await?;
+                println!("{}", client.get().await?);
+            }
+            Command::Set { name } => {
+                let client = IBusClient::new().await?;
+                client.set(&name).await?;
+            }
+            Command::List => {
+                let client = IBusClient::new().await?;
+                for name in client.list().await? {
+                    println!("{name}");
                 }
             }
-        }
+            Command::Toggle => {
+                IBusClient::toggle()?;
+            }
+        },
     }
 
     Ok(())

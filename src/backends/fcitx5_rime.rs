@@ -1,12 +1,14 @@
 use anyhow::{bail, Context, Result};
 use clap::ValueEnum;
+use serde::Deserialize;
 use zbus::{proxy, Connection};
 
 const SERVICE: &str = "org.fcitx.Fcitx5";
 const PATH: &str = "/rime";
 const INTERFACE: &str = "org.fcitx.Fcitx.Rime1";
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum, Deserialize)]
+#[serde(rename_all = "kebab-case")]
 pub enum RimeMode {
     #[value(name = "ascii")]
     Ascii,
@@ -52,9 +54,7 @@ impl Fcitx5RimeClient {
                 let on = match name {
                     "true" => true,
                     "false" => false,
-                    other => bail!(
-                        "invalid ascii state '{other}', expected 'true' or 'false'"
-                    ),
+                    other => bail!("invalid ascii state '{other}', expected 'true' or 'false'"),
                 };
                 proxy
                     .set_ascii_mode(on)
@@ -93,7 +93,9 @@ impl Fcitx5RimeClient {
                     .await
                     .context("could not toggle rime ascii mode")
             }
-            RimeMode::Schema => bail!("toggle is not supported for rime schemas; use `set <schema>`"),
+            RimeMode::Schema => {
+                bail!("toggle is not supported for rime schemas; use `set <schema>`")
+            }
         }
     }
 

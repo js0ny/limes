@@ -260,7 +260,10 @@ mod tests {
 
     #[test]
     fn rejects_unknown_backend_value() {
-        assert_error_kind(&["--backend", "unknown", "list"][..], ErrorKind::InvalidValue);
+        assert_error_kind(
+            &["--backend", "unknown", "list"][..],
+            ErrorKind::InvalidValue,
+        );
     }
 
     #[test]

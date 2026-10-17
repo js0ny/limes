@@ -86,6 +86,23 @@ limes --backend ibus set xkb:us::eng
 IBus does not support `toggle`. `--mode` is only supported by
 `fcitx5-rime`.
 
+## im-select compatibility
+
+Use [config file](#Config File) to define the default behaviour
+
+```bash
+$ limes # default to get
+$ limes jyut6ping3 # set to jyut6ping3 
+```
+
+## Config File
+
+```toml
+# $XDG_CONFIG_HOME/limes/config.toml
+default_backend = "fcitx5" # fcitx5 | fcitx5-rime | ibus
+fcitx5_rime_mode = "schema" # ascii | schema
+```
+
 ## Build
 
 ```bash
